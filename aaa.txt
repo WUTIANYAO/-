@@ -78,6 +78,9 @@ Move operation support for resources - 务必查阅此文档，确认你的所�
 RBAC 影响和处理: Transfer an Azure subscription to a different Microsoft Entra directory
 请根据这些步骤和文档，仔细规划和执行你的资源转移过程。祝你顺利！
 
+https://learn.microsoft.com/zh-cn/azure/azure-resource-manager/management/move-resource-group-and-subscription?tabs=azure-cli
+https://learn.microsoft.com/zh-cn/azure/role-based-access-control/transfer-subscription
+https://learn.microsoft.com/zh-cn/entra/fundamentals/how-subscriptions-associated-directory
 
 はい、承知いたしました。先ほどのAzureポータルを使用した複数ステップによるリソースグループのテナント間移動手順と関連ドキュメントのリンクを含む説明を日本語に翻訳します。
 
