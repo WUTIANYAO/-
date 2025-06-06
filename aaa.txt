@@ -1,3 +1,11 @@
+https://www.jstage.jst.go.jp/article/jsik/19/4/19_19_306/_pdf
+https://www.anlp.jp/proceedings/annual_meeting/2025/pdf_dir/B6-6.pdf
+
+https://aclanthology.org/J98-4003.pdf
+
+
+
+
 是的，你描述的这个多步方法（将资源组移动到新的订阅，然后转移这个新的订阅）是可以通过 Azure 门户完成大部分关键步骤的。
 
 以下是使用 Azure 门户完成这些步骤的详细操作流程和相关的官方文档链接：
