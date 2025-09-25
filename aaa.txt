@@ -1,181 +1,59 @@
+あなたは日本特許調査の専門家です。
+
+目的：
+入力のトピック、調査テーマ、調査観点、およびRAG検索で得た20個のIPC候補から最も適切な5個を厳選し、当該トピックに用いる「最終IPC集合」と「検索用キーワード」を作成する。
+
+重要方針：
+1. 最適性重視（5個厳選）
+   - 候補IPCから最も関連度が高く適切な5個を厳選する。
+   - 候補に無いIPCコードは新規追加しない。
+   - 入力順はRAGの関連度順とみなし、上位から優先的に評価するが、品質も考慮して選択する。
+
+2. 選択基準（5個厳選のため）
+   - 当該トピックの中核機能（トピック名・定義・mandatory語彙で表される機能）と最も整合する。
+   - 調査テーマと調査観点に最も密接に関連する技術分野をカバーする。
+   - 候補IPCの説明文が入力の主要名詞群（トピック名＋定義＋キーワード＋テーマ／観点）と語彙的に高い一致度を持つ。
+   - 当該トピックの作用対象・利用場面との因果関係が明確に説明できる。
+   - 重複する技術分野より、異なる観点をカバーするIPCを優先する。
+
+3. 言語と形式
+   - 出力は日本語のみ（GPS/GNSS 等の略語は可）。英語併記は禁止。
+   - JSONのみを厳密に出力。説明文やコメントを含めない。
+
+4. IPCの記述
+   - 各IPCのdescriptionは、当該IPCコードと紐付けている日本語説明をそのまま使用する。
+   - 出力数は厳選した5件。選択基準に基づいて最も適切な5個を選定する。
+
+5. キーワード作成（論理式最適化）
+   - mandatory：ANDに置く中核概念（8〜15件）。名詞中心の短語で、重複・冗長を排除。
+   - recommended：網羅拡張（8〜15件）。同義語・専門語・バリエーション・略語を含める。
+   - 日本語のみ（略語は可）。英日重複禁止。
+   - 誤回収を抑える限定語（防災、災害、避難、位置連動、地理座標、プッシュ通知 等）を適切に混在。
+   - 入力のキーワードは一部のみ提示される可能性があるため、テーマと観点に沿って適切に拡張する。
+
+入力：
+- 調査テーマ
+- 調査観点
+- トピック名／定義
+- 参考キーワード：initial[], mandatory[], recommended[]（一部のみの可能性あり）
+- IPC候補（JSON配列・入力順が関連度順）：[{ "code": "IPCコード", "ja_description": "日本語説明", "weighted_score": 数値|null }, ...]
+
+出力（JSONのみ）：
 {
-  "filename": "01_PowerPoint_フォーマット_よい例_知財センタコメント付",
-  "tasks": [
-    {
-      "category": 0,
-      "content": "従来、終端装置と収容装置の関係は固定か、またはロードバランサにより数台程度の収容装置で負荷分散を行っていた。ロードバランサにより負荷分散を行う場合も収容装置の実際の負荷状況を把握し振り分けるわけではないため一部の収容装置が過負荷に陥る可能性があり、また過負荷にならない範囲で敢えて負荷を集中させて稼働台数を削減することはしなかった。\n\n対応ページ：2\n\n特許文献1は負荷分散装置の振り分けログを基に振り分けの偏りが大きいかどうかを判断し、偏りが大きい場合に振り分けルールを変更することにより振り分けが均等になるようにしている。\n\n対応ページ：4\n\n",
-      "task_type": [14],
-      "pages_covered": [2, 4]
-    },
-    {
-      "category": 1,
-      "content": "特許6040183\n\n対応ページ：4\n\n",
-      "task_type": [14],
-      "pages_covered": [4]
-    }
+  "topic_name": "トピック名",
+  "final_ipc": [
+    {"code": "IPCコード", "description": "日本語説明"},
+    ...
   ],
-  "metadata": {
-    "total_categories": 8,
-    "processing_info": {
-      "version": "v1.5",
-      "overlaps_detected": 2,
-      "unassigned_pages": [1, 16]
-    },
-    "category_mapping": {
-      "0": "背景技術・従来技術（図・説明）",
-      "1": "先行技術文献",
-      "2": "発明が解決する課題",
-      "3": "発明による解決手段（従来との差分）",
-      "4": "発明の効果",
-      "5": "実施例（図）",
-      "6": "実施例（説明）",
-      "7": "請求項案"
-    }
+  "keywords": {
+    "mandatory": ["日本語単語または短語（8〜15件）"],
+    "recommended": ["日本語単語または短語（8〜15件）"]
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-# API Documentation for File Upload and Processing
-
-## 1. File Upload
-
-### Endpoint Description
-This endpoint is used for uploading files of specified types (pptx, docx, pdf). After receiving the file, the backend will perform an initial validation, store it, and return a unique file ID for subsequent operations.
-
-- **URL:** `/api/v1/upload`
-- **Method:** `POST`
-- **Content-Type:** `multipart/form-data`
-
-### Request Parameters
-
-| Parameter | Type   | Required | Description                                    |
-|-----------|--------|----------|------------------------------------------------|
-| `file`    | File   | Yes      | The file object selected by the user.          |
-| `fileType`| string | Yes      | The file extension, e.g., "pdf", "docx", "pptx". |
-| `fileName`| string | Yes      | The original name of the file.                 |
-
-### Success Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-  ```json
-  {
-    "code": 200,
-    "message": "Upload successful",
-    "data": {
-      "fileId": "u-1668688888",
-      "fileName": "MyDocument.docx",
-      "fileType": "docx",
-      "fileSize": 123456,
-      "uploadTime": "2023-10-27T10:00:00Z",
-      "status": "processing"
-    }
-  }
-  ```
-
-### Error Responses
-
-- **Status Code:** `400 Bad Request` (e.g., unsupported file type)
-  ```json
-  {
-    "code": 400,
-    "message": "Unsupported file type. Only pptx, docx, and pdf formats are allowed.",
-    "data": null
-  }
-  ```
-- **Status Code:** `413 Payload Too Large` (e.g., file size exceeds limit)
-  ```json
-  {
-    "code": 413,
-    "message": "File size exceeds the limit (e.g., 100MB).",
-    "data": null
-  }
-  ```
-- **Status Code:** `500 Internal Server Error`
-    ```json
-    {
-      "code": 500,
-      "message": "Server failed to process the request. Please try again later.",
-      "data": null
-    }
-    ```
-
----
-
-## 2. Query File Processing Status
-
-### Endpoint Description
-After uploading a file, the frontend can poll this endpoint to check the processing status of the file.
-
-- **URL:** `/api/v1/upload/{fileId}/status`
-- **Method:** `GET`
-
-### URL Parameters
-
-| Parameter | Type   | Description                               |
-|-----------|--------|-------------------------------------------|
-| `fileId`  | string | The unique ID returned after a successful file upload. |
-
-### Success Response
-
-- **Status Code:** `200 OK`
-- **Body:**
-  ```json
-  {
-    "code": 200,
-    "message": "Query successful",
-    "data": {
-      "fileId": "u-1668688888",
-      "status": "completed", // "processing", "completed", "failed"
-      "progress": 100, // (0-100)
-      "result": {
-          "processedContent": "Content after processing...",
-          "extractedText": "Extracted text...",
-          "metadata": {
-              "author": "John Doe",
-              "pages": 10
-          }
-      },
-      "error": null // This will contain an error message if processing failed
-    }
-  }
-  ```
-  *When `status` is `failed`:*
-  ```json
-  {
-    "code": 200,
-    "message": "Query successful",
-    "data": {
-      "fileId": "u-1668688888",
-      "status": "failed",
-      "progress": 50,
-      "result": null,
-      "error": "Failed to parse file content, format is incorrect."
-    }
-  }
-  ```
-
-### Error Response
-
-- **Status Code:** `404 Not Found`
-  ```json
-  {
-    "code": 404,
-    "message": "File with the specified fileId was not found.",
-    "data": null
-  }
-  ```
-
----
+実施手順チェック：
+- 候補IPCを上から順に精査し、選択基準に最も適合する5個を厳選する。
+- 近接する上位／下位概念が併存する場合は、より具体的で適切な方を選択する。
+- 選択した5個のIPCは、トピックの異なる観点や技術要素をバランス良くカバーすることを目指す。
+- キーワードは重複・曖昧さを整理し、具体語へ正規化（例：位置情報→地理座標／端末位置／測位／GPS）。
+- JSON構造のみを出力し、選択したIPCは関連度の高い順に配列する。
